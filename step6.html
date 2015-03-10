@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <script data-require="react-with-addons@*" data-semver="0.12.2" src="http://fb.me/react-with-addons-0.12.2.js"></script>
+    <script data-require="jquery@*" data-semver="2.1.3" src="http://code.jquery.com/jquery-2.1.3.min.js"></script>
+    <script data-require="rxjs@*" data-semver="2.3.25" src="//cdnjs.cloudflare.com/ajax/libs/rxjs/2.3.25/rx.all.js"></script>
+    <style>
+	.gray {
+		background-color: #eee;
+	}
+	.highlighted {
+		background-color: #eee;	
+	}
+	.autocomlete-list {
+		list-style: none;
+		background-color: #fff;
+		border: 1px solid #eee;
+		padding: 0;
+		margin: 0;
+		min-width: 120px;
+		box-shadow: 0px 0px 10px 0px rgba(50, 50, 50, 0.75);
+	}
+
+	.autocomlete-list li {
+		padding: 2px 8px;
+		margin: 0;
+	}
+
+	</style>
+  </head>
+
+  <body>
+    	<div id="app"></div>
+    	
+	<script type="text/javascript">
+(function ($, d) {
+
+	function searchWikipedia (term) {
+		return $.ajax({
+			url: 'http://en.wikipedia.org/w/api.php',
+			dataType: 'jsonp',
+			data: {
+			action: 'opensearch',
+			format: 'json',
+			search: term
+		}}).promise();
+	}
+
+	function getInitialData() {
+		return JSON.parse(localStorage.getItem("items") || "[]");
+	}
+
+	// Store
+	var TodoStore = new Rx.BehaviorSubject(getInitialData());
+
+	//
+	var AutocompleteStore = new Rx.BehaviorSubject([]);
+
+	// Local Storage
+	TodoStore.subscribe(function() {
+		localStorage.setItem("items", JSON.stringify(TodoStore.value));
+	});
+
+	// Actions + Dispatcher
+	var TodoActions = {		
+		add: new Rx.Subject(),
+		delete: new Rx.Subject(),
+		update: new Rx.Subject(),
+	};
+
+	// Store Subscription
+	TodoActions.register = function(store) {
+		this.add.filter(function(text) {
+			return text.length > 0;
+		})
+		.map(function(text) {
+			var nextItems = store.value.concat([text]);
+			return nextItems;
+		}).subscribe(store);
+
+		this.delete.map(function(index) {
+			var nextItems = store.value;
+			nextItems.splice(index, 1);
+			return nextItems;
+		}).subscribe(store);
+
+		this.update.map(function(item) {
+			var nextItems = store.value;
+			nextItems[item.index] = item.text;
+			return nextItems;
+		}).subscribe(store);
+	}
+
+	// Register Store
+	TodoActions.register(TodoStore);
+
+	//
+	var AutocompleteActions = {
+		// New Action For Autocomplete
+		input: new Rx.Subject()		
+	};
+	//
+	AutocompleteActions.register = function(store) {
+		this.input
+			.filter(function(text) {
+				return text.length > 2;
+			})
+			.debounce(100)
+			.distinctUntilChanged()
+			.flatMapLatest(searchWikipedia)
+			.map(function(results) {
+				return results["1"];
+			}).subscribe(store);
+	}
+	//
+	AutocompleteActions.register(AutocompleteStore);
+
+	var AutocompleteItem = React.createClass({
+    	displayName: "AutocompleteItem",
+    	componentWillMount: function() {
+			var self = this;
+			this.handlers = {
+				onClick: function(e) {
+				},
+				onBlur: function(e) {
+				}
+			};
+		},
+    	render: function() {
+			return d.li({ className: this.props.highlighted ? "highlighted" : ""},
+		  		d.span({ onClick: this.handlers.onClick, onBlur: this.handlers.onBlur }, this.props.text)
+			);
+		}
+    });
+
+	var AutocompleteList = React.createClass({
+    	displayName: "AutocompleteList",
+    	render: function() {
+    		if (this.props.items.length == 0) {
+    			return null;
+    		}
+			var Item = React.createFactory(AutocompleteItem);
+			var self = this;
+			var createItem = function(itemText, index) {
+			  	return Item({ index: index, text: itemText, highlighted: (self.props.highlightedIndex === index) });
+			};
+			var items = this.props.items.map(createItem);
+			return d.ul({ className: "autocomlete-list" }, items);
+		}
+    });
+
+	var TodoItem = React.createClass({
+    	displayName: "TodoItem",
+		getInitialState: function() {
+			return this.props;
+		},
+		componentWillReceiveProps: function(props) {
+			this.setState(props);
+		},
+		componentWillMount: function() {
+			var self = this;
+			this.handlers = {
+				onDeleteClick: function(e) {
+					TodoActions.delete.onNext(self.props.index);
+				},
+				onClick: function(e) {
+					self.setState({ edit: true })
+				},
+				onBlur: function(e) {
+					self.setState({ text: e.target.innerText },
+						function() {
+							TodoActions.update.onNext({ index: self.props.index, text: self.state.text });								
+						}						
+					);
+				}
+			};
+		},
+		render: function() {
+		  	return d.li({ className: (this.props.index % 2 === 0 ? "gray" : "")},
+		  		d.span({ onClick: this.handlers.onClick, onBlur: this.handlers.onBlur, contentEditable: (this.state.edit || false) }, this.state.text),
+		  		d.a({ onClick: this.handlers.onDeleteClick, href: "#" }, " Del #" + (this.props.index + 1))
+			);
+		}
+	});
+
+	var TodoList = React.createClass({
+		displayName: "TodoList",
+		render: function() {
+			var Item = React.createFactory(TodoItem);
+			var self = this;
+			var createItem = function(itemText, index) {
+			  	return Item({ index: index, text: itemText });
+			};
+			var items = this.props.items.map(createItem);
+			return d.ul({}, items);
+		}
+	});
+
+	var TodoApp = React.createClass({
+		displayName: "TodoApp",
+		getInitialState: function() {
+			// Initial Value
+			return {
+				items: this.props.store.value,
+				text: '',
+				autocomplete: this.props.autocompleteStore.value,
+				highlightedIndex: -1
+			};
+		},
+		componentWillMount: function() {
+			var self = this;
+
+			// Subscribte to Store
+			this.props.store.map(function(items) {
+				return { items: items };
+			})
+			.subscribe(this.setState.bind(this));
+
+			this.props.autocompleteStore.map(function(items) {
+				return { autocomplete: items };
+			}).subscribe(this.setState.bind(this));
+
+			this.handlers = {
+				onChange: function(e) {
+					self.setState({ text: e.target.value }, function() {
+						// Call To Action
+						AutocompleteActions.input.onNext(self.state.text);
+					});
+				},
+				handleSubmit: function(e) {
+					e.preventDefault();
+					TodoActions.add.onNext(self.state.text);
+					var nextText = '';
+					self.setState({ text: nextText });
+				},
+				onKeyDown: function(e) {					
+					var code = e.keyCode,
+	                highlightedIndex = self.state.highlightedIndex;
+					if (highlightedIndex > -1) {
+	                	e.preventDefault();
+	                }
+	            },
+				onKeyUp: function(e) {					
+					var code = e.keyCode,
+	                highlightedIndex = self.state.highlightedIndex;
+		            switch (code) {
+		                case 13:
+		                case 9:
+		                	if (highlightedIndex > -1 && self.state.autocomplete.length > highlightedIndex) {
+			                	self.setState({ text: self.state.autocomplete[highlightedIndex], highlightedIndex: -1, autocomplete: [] });
+			                	e.preventDefault();
+			                }
+		                    break;
+		                case 40:
+		                    highlightedIndex < self.state.autocomplete.length - 1 && (highlightedIndex += 1);
+		                    self.setState({ highlightedIndex: highlightedIndex });
+		                    break;
+		                case 38:
+		                    highlightedIndex > -1 && (highlightedIndex -= 1);
+		                    self.setState({ highlightedIndex: highlightedIndex });
+		                    break;
+		            };
+				}
+			};
+		},
+		componentDidMount: function() {
+		},
+		render: function() {
+			var List = React.createFactory(TodoList);
+			var Autocomplete = React.createFactory(AutocompleteList);
+			return (
+				d.div({},
+					d.h3({ className: "", style: { backgroundColor: "#eee" }}, "TODO"),
+					d.form({ onSubmit: this.handlers.handleSubmit },
+						d.input({ value: this.state.text, onChange: this.handlers.onChange, onKeyDown: this.handlers.onKeyDown, onKeyUp: this.handlers.onKeyUp }),
+						d.div({ style: { position: "absolute" } },
+							Autocomplete({ items: this.state.autocomplete, highlightedIndex: this.state.highlightedIndex })
+						),
+						d.button({}, "Add #" + (this.state.items.length + 1))
+					),
+					List({ items: this.state.items })
+				)
+			);
+		}
+	});
+
+	var App = React.createFactory(TodoApp);
+	React.render(App({ store: TodoStore, autocompleteStore: AutocompleteStore }), document.getElementById('app'));
+})(jQuery, React.DOM);
+	</script>
+  </body>
+
+</html>
