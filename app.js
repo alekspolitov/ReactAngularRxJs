@@ -1,6 +1,5 @@
 'use strict';
 
-
 var toDoList = function($q) {
 
 	var link = function(scope, element, attrs) {
