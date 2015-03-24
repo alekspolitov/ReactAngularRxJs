@@ -1,4 +1,5 @@
-/// <reference path="scripts/_references.ts" />
+/// <reference path="typings/tsd.d.ts" />
+var sampleCtl = require("./sample1");
 var ToDoSample;
 (function (ToDoSample) {
     function toDoList($q) {
@@ -12,5 +13,15 @@ var ToDoSample;
     }
     ToDoSample.toDoList = toDoList;
     toDoList.$inject = ["$q"];
+    var MyCtl = (function () {
+        function MyCtl() {
+        }
+        MyCtl.prototype.load = function () {
+            sampleCtl.SampleImport.Main();
+        };
+        return MyCtl;
+    })();
+    ToDoSample.MyCtl = MyCtl;
     angular.module('TodoApp', []).directive("todoList", toDoList);
 })(ToDoSample || (ToDoSample = {}));
+//# sourceMappingURL=JavaScript.js.map
