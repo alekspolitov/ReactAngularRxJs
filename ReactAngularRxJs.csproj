@@ -24,7 +24,6 @@
     <Content Include="bower.json" />
     <Content Include="JavaScript.js" />
     <Content Include="package.json" />
-    <Content Include="packages.config" />
     <Content Include="README.md" />
     <Content Include="sample.js" />
     <Content Include="step1.html" />
@@ -33,21 +32,24 @@
     <Content Include="step4.html" />
     <Content Include="step5.html" />
     <Content Include="step6.html" />
-    <None Include="Scripts\_references.js" />
   </ItemGroup>
   <ItemGroup>
+    <TypeScriptCompile Include="build.d.ts" />
     <TypeScriptCompile Include="JavaScript.ts" />
     <TypeScriptCompile Include="sample.ts" />
     <TypeScriptCompile Include="sample1.ts" />
-    <TypeScriptCompile Include="Scripts\typings\angularjs\angular-animate.d.ts" />
-    <TypeScriptCompile Include="Scripts\typings\angularjs\angular-cookies.d.ts" />
-    <TypeScriptCompile Include="Scripts\typings\angularjs\angular-mocks.d.ts" />
-    <TypeScriptCompile Include="Scripts\typings\angularjs\angular-resource.d.ts" />
-    <TypeScriptCompile Include="Scripts\typings\angularjs\angular-route.d.ts" />
-    <TypeScriptCompile Include="Scripts\typings\angularjs\angular-sanitize.d.ts" />
-    <TypeScriptCompile Include="Scripts\typings\angularjs\angular.d.ts" />
-    <TypeScriptCompile Include="Scripts\typings\jquery\jquery.d.ts" />
-    <TypeScriptCompile Include="Scripts\_references.ts" />
+    <TypeScriptCompile Include="typings\angularjs\angular.d.ts" />
+    <TypeScriptCompile Include="typings\jquery\jquery.d.ts" />
+    <TypeScriptCompile Include="typings\react\react.d.ts" />
+    <TypeScriptCompile Include="typings\rx\rx-lite.d.ts" />
+    <TypeScriptCompile Include="typings\rx\rx.async-lite.d.ts" />
+    <TypeScriptCompile Include="typings\rx\rx.backpressure-lite.d.ts" />
+    <TypeScriptCompile Include="typings\rx\rx.binding-lite.d.ts" />
+    <TypeScriptCompile Include="typings\rx\rx.coincidence-lite.d.ts" />
+    <TypeScriptCompile Include="typings\rx\rx.d.ts" />
+    <TypeScriptCompile Include="typings\rx\rx.lite.d.ts" />
+    <TypeScriptCompile Include="typings\rx\rx.time-lite.d.ts" />
+    <TypeScriptCompile Include="typings\tsd.d.ts" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">12.0</VisualStudioVersion>
@@ -78,7 +80,7 @@
   <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
     <TypeScriptRemoveComments>false</TypeScriptRemoveComments>
     <TypeScriptSourceMap>true</TypeScriptSourceMap>
-    <TypeScriptModuleKind>none</TypeScriptModuleKind>
+    <TypeScriptModuleKind>commonjs</TypeScriptModuleKind>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)' == 'Release'">
     <TypeScriptRemoveComments>true</TypeScriptRemoveComments>

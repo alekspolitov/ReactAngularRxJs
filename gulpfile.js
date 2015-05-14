@@ -1,39 +1,58 @@
-﻿var gulp = require("gulp"),
-    tsc = require("gulp-typescript");
+﻿var gulp        = require("gulp"),
+	browserify  = require('browserify'),
+	debowerify  = require('debowerify'),
+	tsify       = require('tsify'),
+	exorcist    = require('exorcist'),
+	source      = require('vinyl-source-stream'),
+	gutil       = require('gulp-util');
 
-var paths = {
-    ts: ["**/*.ts", "!node_modules/**/*.ts"],
-    jsout: '_main.js',
-    jswrapper: ['start.js', '_main.js', 'end.js'],
-    jsresult: 'main.js'
+var config = {
+    paths: {
+        ts: ["./*.ts", "typings/**/*.ts", "!node_modules/**/*.ts"],
+        jsresult: 'main.js',
+        app: __dirname,
+        pub: __dirname
+    }
 };
 
-gulp.task('clean', function () {
-    return gulp.src([paths.jsout, paths.jsresult])
-        .pipe(vinylPaths(del));
+gulp.task('compile-ts', function () {
+    var opts = {
+        basedir: config.paths.app,
+        debug: true
+    };
+
+    var b = browserify(opts)
+		.add(config.paths.app + '/main.ts')
+		.ignore('jquery')
+		.ignore('angular')
+		.plugin(tsify, {
+		    noImplicitAny: true,
+		    target: 'es5'
+		})
+		.transform(debowerify);
+
+    return b.bundle()
+		.on('error', gutil.log.bind(gutil, 'Browserify Error'))
+		.pipe(exorcist(config.paths.pub + '/app.js.map'))
+		.pipe(source('app.js'))
+		.pipe(gulp.dest(config.paths.pub));
+
 });
 
-gulp.task('ts', function () {
-    var tsResult = gulp.src(paths.ts)
-      .pipe(tsc({
-          out: paths.jsout,
-          target: 'es5',
-          module: 'commonjs',
-          noExternalResolve: true,
-          preserveConstEnums: true
-      }));
-    return tsResult.js
-       .pipe(gulp.dest("."));
+gulp.task('empty', function () {
+
 });
 
-gulp.task("build", ["ts"], function () {
-    return gulp.src(paths.jswrapper)
-         .pipe(gulp.dest("."));
+gulp.task('future-ts', function () {
+    gulp.src('tsconfig.json')
+	  .pipe(typescript.resolveProjects())
+	  .pipe(sourcemaps.init())
+	  .pipe(typescript({ noExternalResolve: true }))
+	  .pipe(sourcemaps.write())
 });
 
 gulp.task("watch", function () {
-    gulp.watch(paths.ts, ["ts"]);
-    console.log('watching directory:' + paths.ts.join(', '));
+    gulp.watch(config.paths.ts, ["compile-ts"]);
 });
 
-gulp.task('default', ['watch']);
+gulp.task('default', ['compile-ts', 'watch']);

@@ -8,7 +8,6 @@
     "license": "ISC",
     "devDependencies": {
         "gulp": "^3.8.11",
-        "typescript": "^1.4.1",
         "gulp-typescript": "^2.5.0",
         "vinyl-paths": "^1.0.0"
     },

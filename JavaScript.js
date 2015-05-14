@@ -24,4 +24,4 @@ var ToDoSample;
     ToDoSample.MyCtl = MyCtl;
     angular.module('TodoApp', []).directive("todoList", toDoList);
 })(ToDoSample || (ToDoSample = {}));
-//# sourceMappingURL=JavaScript.js.map
+//# sourceMappingURL=javascript.js.map

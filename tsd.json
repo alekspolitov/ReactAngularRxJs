@@ -16,6 +16,27 @@
     },
     "react/react.d.ts": {
       "commit": "0c2ee8583c9a27873d7c40cc79fdcb79b5868150"
+    },
+    "rx/rx.lite.d.ts": {
+      "commit": "0c2ee8583c9a27873d7c40cc79fdcb79b5868150"
+    },
+    "rx/rx.async-lite.d.ts": {
+      "commit": "0c2ee8583c9a27873d7c40cc79fdcb79b5868150"
+    },
+    "rx/rx.time-lite.d.ts": {
+      "commit": "0c2ee8583c9a27873d7c40cc79fdcb79b5868150"
+    },
+    "rx/rx.binding-lite.d.ts": {
+      "commit": "0c2ee8583c9a27873d7c40cc79fdcb79b5868150"
+    },
+    "rx/rx.backpressure-lite.d.ts": {
+      "commit": "0c2ee8583c9a27873d7c40cc79fdcb79b5868150"
+    },
+    "rx/rx.coincidence-lite.d.ts": {
+      "commit": "0c2ee8583c9a27873d7c40cc79fdcb79b5868150"
+    },
+    "rx/rx-lite.d.ts": {
+      "commit": "0c2ee8583c9a27873d7c40cc79fdcb79b5868150"
     }
   }
 }

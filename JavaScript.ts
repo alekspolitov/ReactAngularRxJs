@@ -4,7 +4,7 @@ import sampleCtl = require("./sample1");
 
 module ToDoSample {
     export function toDoList($q: ng.IQService): ng.IDirective {
-
+       
         var link = (scope: ng.IScope, element: JQuery, attributes: any) => {
             element.text("toDoList directive");
         };
@@ -22,6 +22,7 @@ module ToDoSample {
             sampleCtl.SampleImport.Main();
             }
     }
+
     angular.module('TodoApp', [])
         .directive("todoList", toDoList);
 }
